@@ -3,6 +3,8 @@ package com.github.mrcaoyc.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrcaoyc.common.exception.BaseErrorMessage;
 import com.github.mrcaoyc.common.exception.ErrorMessage;
+import com.github.mrcaoyc.security.event.AuthorizationEvent;
+import com.github.mrcaoyc.security.event.AuthorizationListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Vector;
 
 /**
  * @author CaoYongCheng
@@ -23,6 +26,8 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class AuthorizationFilter implements Filter {
     private TokenProperties tokenProperties;
+    private Vector<AuthorizationListener> listeners = new Vector<>();
+    private AuthorizationListener authorizationListener;
 
     public AuthorizationFilter(TokenProperties tokenProperties) {
         Assert.notNull(tokenProperties, "tokenProperties is null");
@@ -40,7 +45,7 @@ public class AuthorizationFilter implements Filter {
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
         // 判断是否需要跳过改请求
-        if(skipIntercept(httpServletRequest)){
+        if (skipIntercept(httpServletRequest)) {
             chain.doFilter(request, response);
             return;
         }
@@ -62,6 +67,32 @@ public class AuthorizationFilter implements Filter {
         after(httpServletRequest, httpServletResponse);
     }
 
+    /**
+     * 注册事件监听器
+     *
+     * @param listener 监听器
+     */
+    public void addAuthorizationListener(AuthorizationListener listener) {
+        listeners.addElement(listener);
+    }
+
+    /**
+     * 移除事件监听器
+     *
+     * @param listener 监听器
+     */
+    public void removeAuthorizationListener(AuthorizationListener listener) {
+        listeners.remove(listener);
+    }
+
+    /**
+     * 认证成功后相应的事件
+     *
+     * @param event 事件
+     */
+    public void authenticationSuccess(AuthorizationEvent event) {
+        listeners.forEach(listener -> listener.authorizationSuccess(event));
+    }
 
     /**
      * 可以终止filter执行，提前返回结果，如遇到什么验证不通过问题
