@@ -36,4 +36,14 @@ public class TokenProperties {
      * 需要排除的路径
      */
     private List<String> excludeUrls = new ArrayList<>();
+
+    /**
+     * 过期时间（单位秒）
+     */
+    private long expiresIn = 60 * 60L;
+
+    /**
+     * 刷新过期时间（单位秒）
+     */
+    private long refreshExpiresIn = 24 * 60 * 60L;
 }
