@@ -58,7 +58,7 @@ public class AuthorizationFilter implements Filter {
         }
 
         // 如果验证不通过，则提交终止
-        if (!before(httpServletRequest, httpServletResponse)) {
+        if (!before(httpServletRequest, httpServletResponse, token)) {
             return;
         }
 
@@ -99,9 +99,10 @@ public class AuthorizationFilter implements Filter {
      *
      * @param request  请求
      * @param response 响应
+     * @param token    获取的令牌，到这里已经表示不会为空
      * @return 如果为true，表示继续执行，false表示提前终止
      */
-    protected boolean before(HttpServletRequest request, HttpServletResponse response) {
+    protected boolean before(HttpServletRequest request, HttpServletResponse response, String token) {
         return true;
     }
 
